@@ -1,6 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Camera, ChevronRight, Folder, Image as ImageIcon, Wand2, Box, User, Settings, ArrowLeftRight, Sparkles, ScanFace, Aperture, Move3d, Smile, Palette, Shirt, Sparkle, ChevronLeft, Layers } from "lucide-react";
+import { Camera, ChevronRight, Folder, Image as ImageIcon, Wand2, Box, User, Settings, Sparkles, ScanFace, Aperture, Move3d, Smile, Palette, Shirt, Layers, ChevronLeft, Star, LayoutGrid, ShoppingBag, Zap, MonitorPlay, Users, X, Check, Upload, Loader2, SwitchCamera, Flashlight, Plus, RefreshCw, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // --- UI Components ---
@@ -26,138 +26,87 @@ export function Header({ title = "BrandCam", showBack = false, onBack }: { title
             <Sparkles className="w-3 h-3 text-amber-600" />
             <span className="text-[10px] font-bold text-amber-700">Pro</span>
          </div>
-         <Settings className="w-5 h-5 text-gray-400" />
+         <div className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden border border-gray-200">
+             <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=100" alt="User" className="w-full h-full object-cover" />
+         </div>
       </div>
     </div>
   );
 }
 
-// Before/After Slider Component
-interface BeforeAfterProps {
-  beforeImage: string;
-  afterImage: string;
-  className?: string;
-  initialPosition?: number;
-  label?: string;
-}
-
-function BeforeAfterSlider({ beforeImage, afterImage, className, initialPosition = 50, label }: BeforeAfterProps) {
-  const [sliderPosition, setSliderPosition] = useState(initialPosition);
-  const [isDragging, setIsDragging] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleMove = (clientX: number) => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-      const percentage = (x / rect.width) * 100;
-      setSliderPosition(percentage);
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    handleMove(e.touches[0].clientX);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging) {
-      handleMove(e.clientX);
-    }
-  };
-
-  return (
-    <div 
-      ref={containerRef}
-      className={`absolute inset-0 w-full h-full overflow-hidden select-none group ${className}`}
-      onMouseDown={() => setIsDragging(true)}
-      onMouseUp={() => setIsDragging(false)}
-      onMouseLeave={() => setIsDragging(false)}
-      onMouseMove={handleMouseMove}
-      onTouchMove={handleTouchMove}
-      onClick={(e) => handleMove(e.clientX)}
-    >
-      <img 
-        src={afterImage} 
-        alt="After" 
-        className="absolute inset-0 w-full h-full object-cover"
-        draggable={false}
-      />
-      
-      <div 
-        className="absolute inset-0 w-full h-full overflow-hidden will-change-[clip-path]"
-        style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
-      >
-        <img 
-          src={beforeImage} 
-          alt="Before" 
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ width: '100%', height: '100%' }}
-          draggable={false}
-        />
-      </div>
-
-      <div 
-        className="absolute top-0 bottom-0 w-0.5 bg-white/60 cursor-ew-resize z-20 flex items-center justify-center hover:bg-white transition-colors"
-        style={{ left: `${sliderPosition}%` }}
-      >
-        <div className="w-4 h-4 bg-white rounded-full shadow-sm flex items-center justify-center -ml-[7px] backdrop-blur-sm">
-           <div className="w-0.5 h-2 bg-gray-300 rounded-full" />
+// Section Header
+function SectionHeader({ title, icon }: { title: string, icon?: React.ReactNode }) {
+    return (
+        <div className="flex items-center gap-2 px-1 mb-3 mt-6 first:mt-2">
+            {icon && <div className="text-gray-900">{icon}</div>}
+            <h2 className="text-base font-bold text-gray-900 tracking-tight">{title}</h2>
         </div>
-      </div>
-      
-      {label && (
-        <div className="absolute bottom-2 left-0 right-0 text-center z-20 pointer-events-none">
-           <span className="text-[10px] font-semibold text-white shadow-black/50 drop-shadow-md bg-black/20 backdrop-blur-[2px] px-2 py-0.5 rounded-full">{label}</span>
-        </div>
-      )}
-    </div>
-  );
+    )
 }
 
-// Feature Card Component (Home Page Style)
-interface FeatureCardProps {
-  title: string;
-  description?: string;
-  icon: React.ReactNode;
-  beforeImage: string;
-  afterImage: string;
-  className?: string;
-  initialPosition?: number;
-  compact?: boolean;
+// Before-After Feature Card
+interface BeforeAfterCardProps {
+    title: string;
+    subtitle: string;
+    beforeImage: string;
+    afterImage: string;
+    badge?: string;
+    onClick?: () => void;
 }
 
-export function FeatureCard({ title, description, icon, beforeImage, afterImage, className, initialPosition, compact }: FeatureCardProps) {
-  return (
-    <motion.div 
-      whileTap={{ scale: 0.98 }}
-      className={`relative overflow-hidden rounded-[16px] bg-gray-100 shadow-sm border border-gray-100 group ${className}`}
-    >
-      <BeforeAfterSlider 
-        beforeImage={beforeImage} 
-        afterImage={afterImage} 
-        initialPosition={initialPosition}
-        label={compact ? undefined : undefined}
-      />
-      
-      <div className="absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-20" />
-
-      <div className={`absolute bottom-0 left-0 right-0 p-3 z-30 pointer-events-none ${compact ? 'text-center pb-2' : ''}`}>
-        <div className={`flex items-center gap-1.5 mb-0.5 ${compact ? 'justify-center flex-col gap-1' : ''}`}>
-            <div className={`w-5 h-5 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/20 ${compact ? 'w-6 h-6' : ''}`}>
-                {icon}
+function BeforeAfterCard({ title, subtitle, beforeImage, afterImage, badge, onClick }: BeforeAfterCardProps) {
+    return (
+        <motion.div 
+            whileTap={{ scale: 0.95 }}
+            onClick={onClick}
+            className="min-w-[160px] w-[160px] h-[220px] rounded-[16px] overflow-hidden relative bg-gray-100 shadow-sm border border-gray-100 snap-start cursor-pointer group"
+        >
+            {/* Before Image (Base) */}
+            <div className="absolute inset-0">
+                <img src={beforeImage} alt="Before" className="w-full h-full object-cover" />
+                <div className="absolute top-2 left-2 w-[52px] text-center py-0.5 bg-black/40 backdrop-blur-sm rounded text-[9px] font-bold text-white/80 z-10">
+                    Original
+                </div>
             </div>
-            <h3 className="text-xs font-bold text-white tracking-wide shadow-black/10 drop-shadow-md leading-tight">{title}</h3>
-        </div>
-        {!compact && description && (
-            <p className="text-[10px] text-white/80 font-medium leading-tight pl-7 opacity-90">{description}</p>
-        )}
-      </div>
-    </motion.div>
-  );
+
+            {/* After Image (Animated Overlay) */}
+            <motion.div 
+                className="absolute inset-y-0 left-0 overflow-hidden border-r border-white/50"
+                animate={{ width: ["0%", "100%", "100%"] }}
+                transition={{ 
+                    duration: 3, 
+                    ease: "easeInOut", 
+                    times: [0, 0.8, 1],
+                    repeat: Infinity, 
+                    repeatDelay: 1 
+                }}
+            >
+                <div className="absolute inset-0 w-[160px] h-full"> {/* Fixed width container to prevent stretching */}
+                    <img src={afterImage} alt="After" className="w-full h-full object-cover" />
+                </div>
+                <div className="absolute top-2 left-2 w-[52px] text-center py-0.5 bg-purple-600/80 backdrop-blur-sm rounded text-[9px] font-bold text-white z-10">
+                    Result
+                </div>
+            </motion.div>
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
+            
+            {badge && (
+                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-white/20 backdrop-blur-md rounded text-[9px] font-bold text-white border border-white/20 z-20">
+                    {badge}
+                </div>
+            )}
+
+            <div className="absolute bottom-0 left-0 right-0 p-3 z-20">
+                <h3 className="text-sm font-bold text-white leading-tight mb-0.5">{title}</h3>
+                <p className="text-[10px] text-white/70 font-medium">{subtitle}</p>
+            </div>
+        </motion.div>
+    )
 }
 
-// --- NEW: Retouch Page Components ---
 
+// ToolCard for Retouch Page (Large Card)
 interface ToolCardProps {
   title: string;
   description: string;
@@ -173,22 +122,22 @@ function ToolCard({ title, description, icon, image, color, onClick }: ToolCardP
       whileHover={{ y: -4 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="relative h-40 rounded-[20px] overflow-hidden cursor-pointer shadow-sm border border-gray-100 group"
+      className="relative h-36 rounded-[20px] overflow-hidden cursor-pointer shadow-sm border border-gray-100 group"
     >
       {/* Background Image */}
       <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
       <div className={`absolute inset-0 opacity-80 mix-blend-multiply ${color}`} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
       {/* Content */}
-      <div className="absolute inset-0 p-4 flex flex-col justify-between z-10">
+      <div className="absolute inset-0 p-5 flex flex-col justify-between z-10">
         <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white">
           {icon}
         </div>
         
         <div>
-          <h3 className="text-lg font-bold text-white mb-0.5">{title}</h3>
-          <p className="text-xs text-white/80 font-medium leading-tight">{description}</p>
+          <h3 className="text-xl font-bold text-white mb-1">{title}</h3>
+          <p className="text-xs text-white/90 font-medium leading-tight">{description}</p>
         </div>
       </div>
 
@@ -200,6 +149,32 @@ function ToolCard({ title, description, icon, image, color, onClick }: ToolCardP
       </div>
     </motion.div>
   );
+}
+
+// Retouch Row Item (For Home Page List)
+function RetouchRow({ title, subtitle, icon, image, onClick }: { title: string, subtitle: string, icon: React.ReactNode, image: string, onClick?: () => void }) {
+    return (
+        <motion.div 
+            whileTap={{ scale: 0.98 }}
+            onClick={onClick}
+            className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-gray-100 shadow-sm mb-2.5 cursor-pointer"
+        >
+            <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0 relative">
+                <img src={image} alt={title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/10" />
+                <div className="absolute inset-0 flex items-center justify-center text-white drop-shadow-md">
+                    {icon}
+                </div>
+            </div>
+            <div className="flex-1">
+                <h3 className="text-sm font-bold text-gray-900">{title}</h3>
+                <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center">
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+            </div>
+        </motion.div>
+    )
 }
 
 // Bottom Navigation
@@ -222,10 +197,14 @@ export function BottomNav({ activeTab, onTabChange }: { activeTab: string, onTab
        <div className="-mt-8">
          <motion.div 
             whileTap={{ scale: 0.9 }}
-            className="w-14 h-14 bg-gray-900 rounded-[20px] flex items-center justify-center shadow-lg shadow-gray-900/30 cursor-pointer text-white border border-gray-700"
+            onClick={() => onTabChange('shoot')} 
+            className={`w-14 h-14 rounded-[24px] flex items-center justify-center shadow-lg cursor-pointer text-white border border-white/20 transition-all duration-300 ${activeTab === 'shoot' ? 'bg-purple-600 shadow-purple-500/30 scale-105' : 'bg-gray-900 shadow-gray-900/30'}`}
          >
            <Camera className="w-6 h-6" />
          </motion.div>
+         <div className="text-center mt-1">
+             <span className="text-[10px] font-medium text-gray-400">拍摄</span>
+         </div>
        </div>
 
        <NavIcon 
@@ -235,10 +214,10 @@ export function BottomNav({ activeTab, onTabChange }: { activeTab: string, onTab
          onClick={() => onTabChange('retouch')} 
        />
        <NavIcon 
-         icon={<User className="w-5 h-5" />} 
-         label="我的" 
-         active={activeTab === 'profile'} 
-         onClick={() => onTabChange('profile')} 
+         icon={<ImageIcon className="w-5 h-5" />} 
+         label="成片" 
+         active={activeTab === 'gallery'} 
+         onClick={() => onTabChange('gallery')} 
        />
     </div>
   );
@@ -248,111 +227,552 @@ function NavIcon({ icon, label, active, onClick }: { icon: React.ReactNode, labe
   return (
     <div 
       onClick={onClick}
-      className={`flex flex-col items-center gap-0.5 transition-colors cursor-pointer ${active ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+      className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${active ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
     >
-      {icon}
+      <div className={active ? "text-gray-900" : "text-gray-400"}>
+        {icon}
+      </div>
       <span className="text-[10px] font-medium">{label}</span>
     </div>
   );
 }
 
+// --- SHOOT FLOW COMPONENTS ---
+
+type ProductType = "hat" | "outer" | "inner" | "pants" | "shoes";
+
+const PRODUCT_TYPES: Record<ProductType, string> = {
+    hat: "帽子",
+    outer: "上衣外搭",
+    inner: "上衣内搭",
+    pants: "裤子",
+    shoes: "鞋子"
+};
+
+const MOCK_LIBRARY: Record<ProductType, string[]> = {
+    hat: [
+        "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200",
+        "https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200"
+    ],
+    outer: [
+        "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+        "https://images.unsplash.com/photo-1544923246-77307dd654cb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    ],
+    inner: [
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+        "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    ],
+    pants: [
+        "https://images.unsplash.com/photo-1584370848010-d7cc637703ef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+        "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    ],
+    shoes: [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+        "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+    ]
+};
+
+// Mock image for the camera preview
+const MOCK_CAMERA_PREVIEW = "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400";
+
+function ShootFlow({ onCancel }: { onCancel: () => void }) {
+    const [step, setStep] = useState<"camera" | "processing" | "result">("camera");
+    const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    const [identifiedType, setIdentifiedType] = useState<ProductType | null>(null);
+    const [outfit, setOutfit] = useState<Partial<Record<ProductType, string>>>({});
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    // Simulator: Capture -> Process -> Result
+    const handleCapture = () => {
+        // In a real app, this would capture from the video stream
+        setCapturedImage(MOCK_CAMERA_PREVIEW);
+        setStep("processing");
+
+        // Mock VLM processing
+        setTimeout(() => {
+            const mockType: ProductType = "outer"; // Hardcoded result for demo
+            setIdentifiedType(mockType);
+            setOutfit({ [mockType]: MOCK_CAMERA_PREVIEW });
+            setStep("result");
+        }, 2000);
+    };
+
+    const handleAutoStyle = () => {
+        // Fill empty slots with random items from library
+        const newOutfit = { ...outfit };
+        (Object.keys(MOCK_LIBRARY) as ProductType[]).forEach(type => {
+            if (!newOutfit[type]) {
+                const options = MOCK_LIBRARY[type];
+                newOutfit[type] = options[Math.floor(Math.random() * options.length)];
+            }
+        });
+        setOutfit(newOutfit);
+    };
+
+    const handleReplaceSlot = (type: ProductType) => {
+        // In a real app, this would open a picker.
+        // Here, we just cycle to another random image or upload logic.
+        // For demo, let's just swap it with another random one from library to simulate "upload/replace"
+        const options = MOCK_LIBRARY[type];
+        const current = outfit[type];
+        const next = options.find(url => url !== current) || options[0];
+        
+        // If it's the captured one, replace with a mock one
+        setOutfit(prev => ({ ...prev, [type]: next }));
+    };
+
+    const handleNextStep = () => {
+        setIsGenerating(true);
+        setTimeout(() => {
+            setIsGenerating(false);
+            onCancel(); // Finish flow
+        }, 2000);
+    };
+
+    if (step === "camera") {
+        return (
+            <div className="fixed inset-0 bg-black z-50 flex flex-col">
+                {/* Camera Header */}
+                <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-20 text-white">
+                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={onCancel}>
+                        <X className="w-6 h-6" />
+                    </Button>
+                    <span className="text-sm font-medium bg-black/30 px-3 py-1 rounded-full backdrop-blur-md">AI 智能识别</span>
+                    <div className="w-10" /> {/* Spacer */}
+                </div>
+
+                {/* Viewport */}
+                <div className="flex-1 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1550989460-0adf9ea622e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800" alt="Camera Preview" className="w-full h-full object-cover opacity-80" />
+                    
+                    {/* Scanning Grid Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-64 h-64 border border-white/30 rounded-lg relative">
+                            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white"></div>
+                            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white"></div>
+                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white"></div>
+                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white"></div>
+                            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.8)] animate-scan"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Controls */}
+                <div className="h-32 bg-black flex items-center justify-around px-8 pb-6">
+                    <Button variant="ghost" size="icon" className="text-white/70">
+                        <ImageIcon className="w-6 h-6" />
+                    </Button>
+                    
+                    <motion.button 
+                        whileTap={{ scale: 0.9 }}
+                        onClick={handleCapture}
+                        className="w-16 h-16 rounded-full bg-white border-4 border-gray-300 flex items-center justify-center"
+                    >
+                        <div className="w-14 h-14 rounded-full border-2 border-black" />
+                    </motion.button>
+
+                    <Button variant="ghost" size="icon" className="text-white/70">
+                        <SwitchCamera className="w-6 h-6" />
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    if (step === "processing") {
+        return (
+            <div className="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center text-white">
+                <div className="w-full max-w-xs text-center space-y-6">
+                    <div className="relative w-24 h-24 mx-auto">
+                        {/* Scanning Effect */}
+                        <div className="absolute inset-0 rounded-xl overflow-hidden border border-white/20">
+                            <img src={capturedImage!} alt="Captured" className="w-full h-full object-cover opacity-50 blur-sm" />
+                        </div>
+                        <div className="absolute inset-0 border-2 border-purple-500 rounded-xl animate-pulse shadow-[0_0_20px_rgba(168,85,247,0.4)]" />
+                    </div>
+                    
+                    <div>
+                        <h3 className="text-xl font-bold mb-2">AI 正在识别商品...</h3>
+                        <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>��析品类与特征</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (isGenerating) {
+        return (
+             <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center text-gray-900">
+                <div className="w-full max-w-xs text-center space-y-6">
+                    <div className="relative w-24 h-24 mx-auto">
+                        <div className="absolute inset-0 rounded-full border-4 border-gray-100" />
+                        <div className="absolute inset-0 rounded-full border-4 border-t-purple-600 animate-spin" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <Sparkles className="w-8 h-8 text-purple-600 fill-purple-600 animate-pulse" />
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 className="text-xl font-bold mb-2">正在生成模特大片...</h3>
+                        <p className="text-sm text-gray-500">AI 正在融合光影与场景</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="fixed inset-0 bg-white z-50 flex flex-col">
+            {/* Result Header */}
+            <div className="bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
+                <Button variant="ghost" size="icon" className="-ml-2" onClick={onCancel}>
+                    <ChevronLeft className="w-6 h-6 text-gray-900" />
+                </Button>
+                <h3 className="font-bold text-gray-900">智能搭配</h3>
+                <div className="w-8" />
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+                
+                {/* Top Tip */}
+                <div className="mb-4 flex items-start gap-3 bg-purple-50 p-3 rounded-xl border border-purple-100">
+                    <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm text-purple-900 font-bold">搭配助手</p>
+                        <p className="text-xs text-purple-700 leading-relaxed mt-0.5">
+                            已识别您的商品为 <span className="font-bold underline">{PRODUCT_TYPES[identifiedType!]}</span>。
+                            您可以手动上传其他单品，或点击下方“帮你搭”一键生成。
+                        </p>
+                    </div>
+                </div>
+
+                {/* Artistic Mannequin Outfit Builder */}
+                <div className="relative w-full max-w-[380px] mx-auto aspect-[3/5] my-4">
+                    
+                    {/* Abstract Fashion Sketch (SVG) */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                         <svg viewBox="0 0 300 600" className="h-full w-full drop-shadow-xl">
+                            <defs>
+                                <linearGradient id="sketchGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#9333ea" stopOpacity="0.1" />
+                                    <stop offset="100%" stopColor="#ec4899" stopOpacity="0.1" />
+                                </linearGradient>
+                                <filter id="glow">
+                                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            
+                            {/* Head */}
+                            <motion.path 
+                                initial={{ pathLength: 0, opacity: 0 }}
+                                animate={{ pathLength: 1, opacity: 1 }}
+                                transition={{ duration: 1.5, ease: "easeInOut" }}
+                                d="M150,50 C135,50 125,65 125,85 C125,105 135,120 150,120 C165,120 175,105 175,85 C175,65 165,50 150,50 Z" 
+                                fill="transparent" 
+                                stroke="#e5e7eb" 
+                                strokeWidth="2"
+                            />
+
+                            {/* Body Line / Spine (Abstract) */}
+                            <motion.path
+                                initial={{ pathLength: 0, opacity: 0 }}
+                                animate={{ pathLength: 1, opacity: 1 }}
+                                transition={{ duration: 1.5, delay: 0.3, ease: "easeInOut" }}
+                                d="M150,120 C150,120 145,140 150,250 C155,360 150,380 150,380"
+                                fill="transparent"
+                                stroke="#e5e7eb"
+                                strokeWidth="1.5"
+                                strokeDasharray="5,5"
+                            />
+                            
+                            {/* Shoulders */}
+                            <motion.path
+                                initial={{ pathLength: 0, opacity: 0 }}
+                                animate={{ pathLength: 1, opacity: 1 }}
+                                transition={{ duration: 1.5, delay: 0.5, ease: "easeInOut" }}
+                                d="M100,130 C120,125 180,125 200,130"
+                                fill="transparent"
+                                stroke="#d1d5db"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                            />
+
+                            {/* Hips (Abstract Curve) */}
+                            <motion.path
+                                initial={{ pathLength: 0, opacity: 0 }}
+                                animate={{ pathLength: 1, opacity: 1 }}
+                                transition={{ duration: 1.5, delay: 0.7, ease: "easeInOut" }}
+                                d="M110,250 C130,260 170,260 190,250"
+                                fill="transparent"
+                                stroke="#d1d5db"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                            />
+
+                            {/* Legs (Long stylized lines) */}
+                            <motion.path
+                                initial={{ pathLength: 0, opacity: 0 }}
+                                animate={{ pathLength: 1, opacity: 1 }}
+                                transition={{ duration: 1.5, delay: 0.9, ease: "easeInOut" }}
+                                d="M110,250 C105,350 115,450 120,550 M190,250 C195,350 185,450 180,550"
+                                fill="transparent"
+                                stroke="#e5e7eb"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                            />
+                            
+                             {/* Arms (Abstract hints) */}
+                             <motion.path
+                                initial={{ pathLength: 0, opacity: 0 }}
+                                animate={{ pathLength: 1, opacity: 1 }}
+                                transition={{ duration: 1.5, delay: 1.1, ease: "easeInOut" }}
+                                d="M100,130 C80,180 85,220 90,260 M200,130 C220,180 215,220 210,260"
+                                fill="transparent"
+                                stroke="#e5e7eb"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                            />
+                        </svg>
+                    </div>
+                    
+                    {/* Slots Overlay - Click to replace */}
+                    
+                    {/* Hat */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-28">
+                         <MannequinSlot 
+                            type="hat"
+                            label="HAT" 
+                            image={outfit.hat} 
+                            active={identifiedType === "hat"}
+                            onClick={() => handleReplaceSlot('hat')}
+                        />
+                    </div>
+
+                    {/* Inner */}
+                    <div className="absolute top-[20%] left-0 w-36 h-48">
+                        <MannequinSlot 
+                            type="inner"
+                            label="INNER" 
+                            image={outfit.inner} 
+                            active={identifiedType === "inner"}
+                            onClick={() => handleReplaceSlot('inner')}
+                        />
+                    </div>
+
+                    {/* Outer */}
+                    <div className="absolute top-[20%] right-0 w-36 h-48">
+                        <MannequinSlot 
+                            type="outer"
+                            label="OUTER" 
+                            image={outfit.outer} 
+                            active={identifiedType === "outer"}
+                            onClick={() => handleReplaceSlot('outer')}
+                        />
+                    </div>
+
+                    {/* Pants */}
+                    <div className="absolute top-[50%] left-[2%] w-40 h-52">
+                         <MannequinSlot 
+                            type="pants"
+                            label="BOTTOM" 
+                            image={outfit.pants} 
+                            active={identifiedType === "pants"}
+                            onClick={() => handleReplaceSlot('pants')}
+                        />
+                    </div>
+                    
+                     {/* Shoes */}
+                     <div className="absolute top-[75%] right-[2%] w-28 h-28">
+                        <MannequinSlot 
+                            type="shoes"
+                            label="SHOES" 
+                            image={outfit.shoes} 
+                            active={identifiedType === "shoes"}
+                            onClick={() => handleReplaceSlot('shoes')}
+                        />
+                    </div>
+
+                </div>
+            </div>
+
+            {/* Bottom Action */}
+            <div className="p-4 bg-white border-t border-gray-100 flex gap-3">
+                <Button 
+                    variant="outline" 
+                    className="flex-1 h-12 rounded-xl border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800"
+                    onClick={handleAutoStyle}
+                >
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    帮你搭
+                </Button>
+                <Button 
+                    className="flex-[2] h-12 rounded-xl bg-gray-900 text-white shadow-lg text-base font-bold"
+                    onClick={handleNextStep}
+                >
+                    下一步
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+function MannequinSlot({ type, label, image, active, onClick }: { type: string, label: string, image?: string, active?: boolean, onClick?: () => void }) {
+    return (
+         <motion.div 
+            whileTap={{ scale: 0.95 }}
+            onClick={onClick}
+            className={`rounded-xl overflow-hidden flex items-center justify-center relative shadow-sm transition-all duration-500 ease-out cursor-pointer
+                ${image ? 'bg-white border-2 border-white shadow-lg scale-105 z-10' : 'bg-white/60 backdrop-blur-sm border border-gray-200/50 hover:border-purple-300 hover:bg-white/80'}
+                ${active && !image ? 'border-purple-500 bg-purple-50/80 shadow-[0_0_20px_rgba(168,85,247,0.2)] ring-1 ring-purple-500/30' : ''}
+                w-full h-full
+            `}
+        >
+            {image ? (
+                <>
+                    <img src={image} alt={label} className="w-full h-full object-cover" />
+                    {/* Edit Overlay */}
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
+                         <div className="bg-white/90 rounded-full p-1.5 shadow-sm">
+                            <RefreshCw className="w-4 h-4 text-gray-700" />
+                         </div>
+                    </div>
+                </>
+            ) : (
+                <div className="flex flex-col items-center justify-center gap-0.5 w-full h-full">
+                     <div className={`w-5 h-5 rounded-full flex items-center justify-center mb-0.5 transition-colors duration-300 ${active ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-400'}`}>
+                        <Plus className="w-3 h-3" />
+                    </div>
+                    <span className={`text-[8px] font-bold tracking-widest uppercase ${active ? 'text-purple-700' : 'text-gray-400'}`}>{label}</span>
+                </div>
+            )}
+
+            {active && !image && (
+                <div className="absolute inset-0 border-2 border-purple-400 rounded-xl animate-pulse opacity-50" />
+            )}
+        </motion.div>
+    )
+}
+
 // --- View Components ---
 
-function HomeView() {
+function HomeView({ onNavigate }: { onNavigate: (feature: string) => void }) {
   return (
     <>
-      <div className="flex-1 px-3 pt-2 pb-24 space-y-4 overflow-y-auto scrollbar-hide">
-        <div className="grid grid-cols-2 gap-2.5 h-[220px]">
-            <FeatureCard 
-                className="h-full"
-                title="模特影棚"
-                description="AI真人穿拍"
-                icon={<ScanFace className="w-3 h-3" />}
-                initialPosition={35}
-                beforeImage="https://images.unsplash.com/photo-1564316800929-be17a69d6966?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjbG90aGVzJTIwb24lMjBoYW5nZXIlMjB3aGl0ZSUyMGJhY2tncm91bmQlMjBtaW5pbWFsaXN0fGVufDF8fHx8MTc2NDY1MTk5OHww&ixlib=rb-4.1.0&q=80&w=600"
-                afterImage="https://images.unsplash.com/photo-1704775988759-16fdeb0a2235?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXNoaW9uJTIwbW9kZWwlMjB3ZWFyaW5nJTIwZWxlZ2FudCUyMGRyZXNzJTIwc3R1ZGlvfGVufDF8fHx8MTc2NDY1MTk5OHww&ixlib=rb-4.1.0&q=80&w=600"
-            />
-            <FeatureCard 
-                className="h-full"
-                title="商品影棚"
-                description="静物场景合成"
-                icon={<Box className="w-3 h-3" />}
-                initialPosition={65}
-                beforeImage="https://images.unsplash.com/photo-1677735476292-0fc57ab097b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3NtZXRpY3MlMjBib3R0bGUlMjB3aGl0ZSUyMGJhY2tncm91bmQlMjBzaW1wbGV8ZW58MXx8fHwxNzY0NjUxOTk4fDA&ixlib=rb-4.1.0&q=80&w=600"
-                afterImage="https://images.unsplash.com/photo-1668025790616-750caa376cd6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjb3NtZXRpYyUyMHByb2R1Y3QlMjBhZHZlcnRpc2luZyUyMHBob3RvZ3JhcGh5JTIwd2F0ZXIlMjBzcGxhc2h8ZW58MXx8fHwxNzY0NjUxOTk4fDA&ixlib=rb-4.1.0&q=80&w=600"
-            />
-        </div>
-
-        <div className="space-y-2">
-            <div className="flex items-center gap-2 px-1">
-                 <div className="bg-purple-100 p-1 rounded-md">
-                    <Wand2 className="w-3.5 h-3.5 text-purple-600" />
-                 </div>
-                 <h2 className="text-sm font-bold text-gray-900">AI 修图室</h2>
-                 <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">专业版功能</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5 h-[280px]">
-                <FeatureCard 
-                    compact
-                    className="h-full"
-                    title="换模特风格"
-                    icon={<Palette className="w-3 h-3" />}
-                    initialPosition={50}
-                    beforeImage="https://images.unsplash.com/photo-1761001313134-a2b63f00d4bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
-                    afterImage="https://images.unsplash.com/photo-1762274674115-a511e3d3c688?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+      <div className="flex-1 pt-4 pb-24 overflow-y-auto scrollbar-hide bg-gray-50/50">
+        
+        {/* Section 1: Model Photography */}
+        <div className="px-4">
+            <SectionHeader title="拍模特" icon={<ScanFace className="w-4 h-4 text-purple-600" />} />
+            <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide snap-x">
+                 <BeforeAfterCard 
+                    title="专业棚拍"
+                    subtitle="纯色背景质感"
+                    beforeImage="https://images.unsplash.com/photo-1550614000-4b9519e02d48?w=400"
+                    afterImage="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400"
+                    onClick={() => onNavigate('专业棚拍')}
                 />
-                <FeatureCard 
-                    compact
-                    className="h-full"
-                    title="镜头控制"
-                    icon={<Aperture className="w-3 h-3" />}
-                    initialPosition={40}
-                    beforeImage="https://images.unsplash.com/photo-1764263996467-4690e4306241?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
-                    afterImage="https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+                <BeforeAfterCard 
+                    title="买家秀"
+                    subtitle="真实生活场景"
+                    beforeImage="https://images.unsplash.com/photo-1554412933-514a83d2f3c8?w=400"
+                    afterImage="https://images.unsplash.com/photo-1746458258548-5e5bd7225c9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+                    onClick={() => onNavigate('买家秀')}
                 />
-                <FeatureCard 
-                    compact
-                    className="h-full"
-                    title="Pose控制"
-                    icon={<Move3d className="w-3 h-3" />}
-                    initialPosition={60}
-                    beforeImage="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
-                    afterImage="https://images.unsplash.com/photo-1529139574466-a3005c40717f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+                <BeforeAfterCard 
+                    title="组图拍摄"
+                    subtitle="多角度套图"
+                    beforeImage="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400"
+                    afterImage="https://images.unsplash.com/photo-1619199037745-bcc49b4afb0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+                    badge="NEW"
+                    onClick={() => onNavigate('组图拍摄')}
                 />
-                <FeatureCard 
-                    compact
-                    className="h-full"
-                    title="表情控制"
-                    icon={<Smile className="w-3 h-3" />}
-                    initialPosition={50}
-                    beforeImage="https://images.unsplash.com/photo-1650213236604-6dd826c965c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
-                    afterImage="https://images.unsplash.com/photo-1645226027644-ca4db2db060a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+                 <BeforeAfterCard 
+                    title="氛围大片"
+                    subtitle="高级外景氛围"
+                    beforeImage="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400"
+                    afterImage="https://images.unsplash.com/photo-1759003527686-807990b8df26?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+                    onClick={() => onNavigate('氛围大片')}
                 />
             </div>
         </div>
 
-        <div className="mt-4 px-1">
-             <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-bold text-gray-900">最近生成</h3>
-                <ChevronRight className="w-4 h-4 text-gray-300" />
-             </div>
-             <div className="flex gap-2 overflow-hidden h-16">
-                 {[1,2,3,4].map(i => (
-                     <div key={i} className="w-16 bg-gray-100 rounded-lg border border-gray-100" />
-                 ))}
-             </div>
+        {/* Section 2: Product Photography */}
+        <div className="px-4 mt-2">
+            <SectionHeader title="拍商品" icon={<Box className="w-4 h-4 text-orange-600" />} />
+            <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide snap-x">
+                <BeforeAfterCard 
+                    title="商品棚拍"
+                    subtitle="电商白底图"
+                    beforeImage="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?w=400"
+                    afterImage="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?w=400&bg=fff" // Mocking a clear bg effect with slightly diff url params or distinct image
+                    onClick={() => onNavigate('商品棚拍')}
+                />
+                <BeforeAfterCard 
+                    title="商品挂拍"
+                    subtitle="服装自然垂顺"
+                    beforeImage="https://images.unsplash.com/photo-1580842402762-6f5868c17412?w=400"
+                    afterImage="https://images.unsplash.com/photo-1580842402762-6f5868c17412?w=400&sat=-100" // Mocking style change
+                    onClick={() => onNavigate('商品挂拍')}
+                />
+                 <BeforeAfterCard 
+                    title="商品氛围"
+                    subtitle="场景化营销"
+                    beforeImage="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400"
+                    afterImage="https://images.unsplash.com/photo-1634944119603-74cab6454618?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+                    onClick={() => onNavigate('商品氛围')}
+                />
+            </div>
         </div>
+
+        {/* Section 3: Retouch Room */}
+        <div className="px-4 mt-2">
+            <SectionHeader title="修图室" icon={<Wand2 className="w-4 h-4 text-blue-600" />} />
+            <div className="flex flex-col">
+                <RetouchRow 
+                    title="通用编辑"
+                    subtitle="画质增强、智能抠图、消除笔"
+                    icon={<Settings className="w-6 h-6" />}
+                    image="https://images.unsplash.com/photo-1746458825397-9cd95fff0dfb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200"
+                    onClick={() => onNavigate('通用编辑')}
+                />
+                <RetouchRow 
+                    title="换搭配"
+                    subtitle="智能生成穿搭组合"
+                    icon={<Shirt className="w-6 h-6" />}
+                    image="https://images.unsplash.com/photo-1608680480325-d3ec3cdf7e60?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200"
+                    onClick={() => onNavigate('换搭配')}
+                />
+                 <RetouchRow 
+                    title="换模特"
+                    subtitle="保留服装，更换模特人脸"
+                    icon={<Smile className="w-6 h-6" />}
+                    image="https://images.unsplash.com/photo-1630258247228-b39e4f76cd60?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200"
+                    onClick={() => onNavigate('换模特')}
+                />
+            </div>
+        </div>
+
       </div>
     </>
   );
 }
 
-function RetouchView({ onSelectFeature }: { onSelectFeature: (feature: string) => void }) {
+function RetouchView({ onNavigate }: { onNavigate: (feature: string) => void }) {
     return (
-        <div className="flex-1 px-4 pt-4 pb-24 overflow-y-auto scrollbar-hide">
+        <div className="flex-1 px-4 pt-4 pb-24 overflow-y-auto scrollbar-hide bg-white">
             <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900">AI 创意工坊</h2>
+                <h2 className="text-2xl font-bold text-gray-900">AI 修图室</h2>
                 <p className="text-sm text-gray-500 mt-1">选择工具开始创作</p>
             </div>
 
@@ -363,59 +783,53 @@ function RetouchView({ onSelectFeature }: { onSelectFeature: (feature: string) =
                     icon={<Wand2 className="w-5 h-5" />}
                     image="https://images.unsplash.com/photo-1607616996527-a641c438bc69?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600"
                     color="bg-blue-600"
-                    onClick={() => onSelectFeature("General Retouch")}
+                    onClick={() => onNavigate("通用修图")}
                 />
 
                 <ToolCard 
-                    title="商品影棚"
-                    description="为商品生成专业摄影背景"
-                    icon={<Box className="w-5 h-5" />}
-                    image="https://images.unsplash.com/photo-1693763824929-bd6b4b959e2b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600"
-                    color="bg-orange-600"
-                    onClick={() => onSelectFeature("Product Studio")}
-                />
-
-                <ToolCard 
-                    title="服装搭配"
-                    description="智能模特征，虚拟试衣"
+                    title="换搭配"
+                    description="智能生成穿搭组合，无限可能"
                     icon={<Shirt className="w-5 h-5" />}
                     image="https://images.unsplash.com/photo-1582142306909-195724d33ffc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600"
                     color="bg-pink-600"
-                    onClick={() => onSelectFeature("Outfit Match")}
+                    onClick={() => onNavigate("换搭配")}
                 />
-            </div>
 
-            <div className="mt-8 text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-100">
-                    <Layers className="w-4 h-4 text-gray-400" />
-                    <span className="text-xs text-gray-400 font-medium">更多功能开发中...</span>
-                </div>
+                <ToolCard 
+                    title="换模特"
+                    description="保留服装，更换模特人脸与风格"
+                    icon={<Smile className="w-5 h-5" />}
+                    image="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600"
+                    color="bg-indigo-600"
+                    onClick={() => onNavigate("换模特")}
+                />
             </div>
         </div>
     );
 }
 
-function GenerationView({ feature, onBack }: { feature: string, onBack: () => void }) {
+function FeatureDetailView({ feature, onBack }: { feature: string, onBack: () => void }) {
     return (
         <div className="flex-1 flex flex-col bg-gray-50">
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center shadow-sm mb-6">
-                    {feature === 'General Retouch' && <Wand2 className="w-10 h-10 text-blue-500" />}
-                    {feature === 'Product Studio' && <Box className="w-10 h-10 text-orange-500" />}
-                    {feature === 'Outfit Match' && <Shirt className="w-10 h-10 text-pink-500" />}
+                <div className="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center shadow-sm mb-6">
+                    <Sparkles className="w-12 h-12 text-purple-500" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{feature}</h2>
-                <p className="text-gray-500 text-sm max-w-[200px]">
-                    在此页面上传图片并配置参数，AI 将为您生成高质量结果。
+                <p className="text-gray-500 text-sm max-w-[240px] leading-relaxed">
+                    使用 BrandCam 的 AI 技术为您生成高质量的 {feature}。上传您的素材，剩下的交给我们。
                 </p>
                 
-                <div className="mt-10 w-full max-w-xs space-y-3">
-                    <div className="h-12 bg-white rounded-xl border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-sm">
-                        上传区域 (演示)
+                <div className="mt-10 w-full max-w-xs space-y-4">
+                    <div className="h-40 bg-white rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 gap-2 hover:border-purple-200 hover:bg-purple-50/50 transition-colors cursor-pointer">
+                         <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                            <ImageIcon className="w-5 h-5 text-gray-400" />
+                         </div>
+                        <span className="text-xs font-medium">点击上传图片</span>
                     </div>
-                    <div className="h-12 bg-gray-900 rounded-xl flex items-center justify-center text-white font-medium shadow-lg shadow-gray-900/20">
+                    <Button className="w-full h-12 text-base rounded-xl bg-gray-900 hover:bg-gray-800 shadow-lg shadow-gray-900/20">
                         开始生成
-                    </div>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -425,46 +839,70 @@ function GenerationView({ feature, onBack }: { feature: string, onBack: () => vo
 // Main App
 export default function App() {
   const [activeTab, setActiveTab] = useState("home");
-  const [retouchFeature, setRetouchFeature] = useState<string | null>(null);
+  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
+  const [isShooting, setIsShooting] = useState(false);
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    // Reset internal views when switching main tabs
-    if (tab !== 'retouch') {
-        setRetouchFeature(null);
+    if (tab === 'shoot') {
+        setIsShooting(true);
+        return;
     }
+    setActiveTab(tab);
+    setSelectedFeature(null);
+  };
+
+  const handleNavigate = (feature: string) => {
+      setSelectedFeature(feature);
   };
 
   return (
     <div className="min-h-screen bg-white font-sans max-w-md mx-auto shadow-2xl overflow-hidden relative flex flex-col">
+      {/* Camera / Shoot Flow Overlay */}
+      <AnimatePresence>
+        {isShooting && (
+            <motion.div 
+                initial={{ opacity: 0, y: '100%' }} 
+                animate={{ opacity: 1, y: 0 }} 
+                exit={{ opacity: 0, y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="fixed inset-0 z-50 bg-black"
+            >
+                <ShootFlow onCancel={() => setIsShooting(false)} />
+            </motion.div>
+        )}
+      </AnimatePresence>
+
       <Header 
-        title={retouchFeature ? retouchFeature : (activeTab === 'retouch' ? "AI 工具箱" : "BrandCam")} 
-        showBack={!!retouchFeature}
-        onBack={() => setRetouchFeature(null)}
+        title={selectedFeature || (activeTab === 'assets' ? "品牌资产" : activeTab === 'gallery' ? "我的作品" : activeTab === 'retouch' ? "AI 修图" : "BrandCam")} 
+        showBack={!!selectedFeature}
+        onBack={() => setSelectedFeature(null)}
       />
       
       <AnimatePresence mode="wait">
-        {activeTab === 'home' && (
+        {activeTab === 'home' && !selectedFeature && (
              <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col overflow-hidden">
-                 <HomeView />
+                 <HomeView onNavigate={handleNavigate} />
              </motion.div>
         )}
         
-        {activeTab === 'retouch' && !retouchFeature && (
-            <motion.div key="retouch-list" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col overflow-hidden">
-                <RetouchView onSelectFeature={setRetouchFeature} />
+        {activeTab === 'retouch' && !selectedFeature && (
+             <motion.div key="retouch" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col overflow-hidden">
+                 <RetouchView onNavigate={handleNavigate} />
+             </motion.div>
+        )}
+
+        {selectedFeature && (
+            <motion.div key="detail" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col overflow-hidden">
+                <FeatureDetailView feature={selectedFeature} onBack={() => setSelectedFeature(null)} />
             </motion.div>
         )}
 
-        {activeTab === 'retouch' && retouchFeature && (
-            <motion.div key="retouch-gen" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col overflow-hidden">
-                <GenerationView feature={retouchFeature} onBack={() => setRetouchFeature(null)} />
-            </motion.div>
-        )}
-
-        {(activeTab === 'assets' || activeTab === 'profile') && (
+        {(activeTab === 'assets' || activeTab === 'gallery') && (
             <motion.div key="placeholder" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-                功能开发中...
+                <div className="text-center">
+                    <p className="font-medium text-gray-900 mb-1">{activeTab === 'assets' ? '品牌资产' : '我的成片'}</p>
+                    <p>功能开发中...</p>
+                </div>
             </motion.div>
         )}
       </AnimatePresence>

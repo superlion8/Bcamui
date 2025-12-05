@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Camera, ChevronRight, Folder, Image as ImageIcon, Wand2, Box, User, Settings, Sparkles, ScanFace, Aperture, Move3d, Smile, Palette, Shirt, Layers, ChevronLeft, Star, LayoutGrid, ShoppingBag, Zap, MonitorPlay, Users, X, Check, Upload, Loader2, SwitchCamera, Flashlight, Plus, RefreshCw, ArrowRight } from "lucide-react";
+import { Camera, ChevronRight, Folder, Image as ImageIcon, Wand2, Box, User, Settings, Sparkles, ScanFace, Aperture, Move3d, Smile, Palette, Shirt, Layers, ChevronLeft, Star, LayoutGrid, ShoppingBag, Zap, MonitorPlay, Users, X, Check, Upload, Loader2, SwitchCamera, Flashlight, Plus, RefreshCw, ArrowRight, Shuffle, Axis3d, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // --- UI Components ---
@@ -275,7 +275,7 @@ const MOCK_LIBRARY: Record<ProductType, string[]> = {
 // Mock image for the camera preview
 const MOCK_CAMERA_PREVIEW = "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400";
 
-function ShootFlow({ onCancel }: { onCancel: () => void }) {
+function ShootFlow({ onCancel, mode }: { onCancel: () => void, mode: string | null }) {
     const [step, setStep] = useState<"camera" | "processing" | "result">("camera");
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [identifiedType, setIdentifiedType] = useState<ProductType | null>(null);
@@ -337,7 +337,7 @@ function ShootFlow({ onCancel }: { onCancel: () => void }) {
                     <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={onCancel}>
                         <X className="w-6 h-6" />
                     </Button>
-                    <span className="text-sm font-medium bg-black/30 px-3 py-1 rounded-full backdrop-blur-md">AI 智能识别</span>
+                    <span className="text-sm font-medium bg-black/30 px-3 py-1 rounded-full backdrop-blur-md">{mode || "AI 智能识别"}</span>
                     <div className="w-10" /> {/* Spacer */}
                 </div>
 
@@ -395,7 +395,7 @@ function ShootFlow({ onCancel }: { onCancel: () => void }) {
                         <h3 className="text-xl font-bold mb-2">AI 正在识别商品...</h3>
                         <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>��析品类与特征</span>
+                            <span>分析品类与特征</span>
                         </div>
                     </div>
                 </div>
@@ -431,7 +431,7 @@ function ShootFlow({ onCancel }: { onCancel: () => void }) {
                 <Button variant="ghost" size="icon" className="-ml-2" onClick={onCancel}>
                     <ChevronLeft className="w-6 h-6 text-gray-900" />
                 </Button>
-                <h3 className="font-bold text-gray-900">智能搭配</h3>
+                <h3 className="font-bold text-gray-900">{mode || "智能搭配"}</h3>
                 <div className="w-8" />
             </div>
 
@@ -664,6 +664,202 @@ function MannequinSlot({ type, label, image, active, onClick }: { type: string, 
     )
 }
 
+// --- Group Shot Flow ---
+function GroupShotView({ onCancel }: { onCancel: () => void }) {
+    const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+    const [mode, setMode] = useState<'random' | 'multi'>('random');
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleUpload = () => {
+        // Simulate upload
+        setUploadedImage("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800");
+    };
+
+    const handleStart = () => {
+        if (!uploadedImage) return;
+        setIsProcessing(true);
+        setTimeout(() => {
+            setIsProcessing(false);
+            onCancel(); // Or navigate to result
+        }, 2000);
+    };
+
+    if (isProcessing) {
+         return (
+             <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center text-gray-900">
+                <div className="w-full max-w-xs text-center space-y-6">
+                    <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto" />
+                    <div>
+                        <h3 className="text-xl font-bold mb-2">正在生成组图...</h3>
+                        <p className="text-sm text-gray-500">AI 正在{mode === 'random' ? '随机捕捉最佳视角' : '生成多角度细节'}</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="fixed inset-0 bg-gray-50 z-50 flex flex-col">
+            {/* Header */}
+             <div className="bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
+                <Button variant="ghost" size="icon" className="-ml-2" onClick={onCancel}>
+                    <ChevronLeft className="w-6 h-6 text-gray-900" />
+                </Button>
+                <h3 className="font-bold text-gray-900">组图拍摄</h3>
+                <div className="w-8" />
+            </div>
+
+            <div className="flex-1 p-4 overflow-y-auto">
+                {/* Upload Area */}
+                <motion.div 
+                    layout
+                    onClick={handleUpload}
+                    className={`w-full aspect-[3/4] rounded-3xl border-2 border-dashed border-gray-300 bg-white flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative
+                        ${uploadedImage ? 'border-purple-500 shadow-xl' : 'hover:bg-gray-50 hover:border-purple-300'}
+                    `}
+                >
+                    {uploadedImage ? (
+                        <>
+                            <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-cover" />
+                            <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-md flex items-center gap-1.5">
+                                <ImagePlus className="w-3.5 h-3.5" />
+                                更换图片
+                            </div>
+                        </>
+                    ) : (
+                        <div className="text-center space-y-3">
+                            <div className="w-16 h-16 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mx-auto mb-2">
+                                <ImagePlus className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <p className="text-gray-900 font-bold text-lg">上传参考图</p>
+                                <p className="text-gray-500 text-xs mt-1">支持相册 / 图库导入</p>
+                            </div>
+                        </div>
+                    )}
+                </motion.div>
+
+                {/* Mode Selection */}
+                <div className="mt-8">
+                    <h3 className="text-sm font-bold text-gray-900 mb-3 px-1">选择生成模式</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <ModeCard 
+                            title="随意拍" 
+                            desc="AI 捕捉灵感瞬间" 
+                            icon={<Shuffle className="w-5 h-5" />} 
+                            active={mode === 'random'} 
+                            onClick={() => setMode('random')} 
+                        />
+                        <ModeCard 
+                            title="多角度" 
+                            desc="全方位展示细节" 
+                            icon={<Axis3d className="w-5 h-5" />} 
+                            active={mode === 'multi'} 
+                            onClick={() => setMode('multi')} 
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-white border-t border-gray-100">
+                <Button 
+                    className="w-full h-14 rounded-2xl text-lg font-bold bg-gray-900 shadow-xl shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!uploadedImage}
+                    onClick={handleStart}
+                >
+                    <Sparkles className="w-5 h-5 mr-2 text-purple-400" />
+                    开始拍摄
+                </Button>
+            </div>
+        </div>
+    )
+}
+
+function ModeCard({ title, desc, icon, active, onClick }: { title: string, desc: string, icon: React.ReactNode, active?: boolean, onClick: () => void }) {
+    return (
+        <div 
+            onClick={onClick}
+            className={`relative p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-3 h-28
+                ${active ? 'bg-purple-600 border-purple-600 text-white shadow-lg shadow-purple-200' : 'bg-white border-gray-100 text-gray-600 hover:border-purple-100'}
+            `}
+        >
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-900'}`}>
+                {icon}
+            </div>
+            <div>
+                <h4 className={`font-bold ${active ? 'text-white' : 'text-gray-900'}`}>{title}</h4>
+                <p className={`text-[10px] mt-0.5 ${active ? 'text-white/80' : 'text-gray-400'}`}>{desc}</p>
+            </div>
+            {active && (
+                <div className="absolute top-3 right-3">
+                    <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5 text-purple-600 stroke-[3]" />
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+// --- Shoot Mode Selector (Arc Style Refined) ---
+function ShootModeSelector({ isOpen, onClose, onSelect }: { isOpen: boolean, onClose: () => void, onSelect: (mode: string) => void }) {
+  const modes = [
+    { id: "专业棚拍", label: "专业棚拍", icon: <Aperture className="w-6 h-6 text-white" />, position: "bottom-[130px] left-[15%]" },
+    { id: "买家秀", label: "买家秀", icon: <Users className="w-6 h-6 text-white" />, position: "bottom-[180px] left-1/2 -translate-x-1/2" },
+    { id: "商品棚拍", label: "商品棚拍", icon: <Box className="w-6 h-6 text-white" />, position: "bottom-[130px] right-[15%]" },
+  ];
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex flex-col items-center justify-end pb-8"
+        >
+            {/* Background Gradient/Glow (Bottom) */}
+            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+
+            {/* Menu Items */}
+            <div className="absolute inset-0">
+                 {modes.map((m, i) => (
+                     <motion.div
+                        key={m.id}
+                        initial={{ opacity: 0, scale: 0.5, y: 50 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.5, y: 50 }}
+                        transition={{ delay: i * 0.1, type: "spring", stiffness: 300, damping: 20 }}
+                        className={`absolute ${m.position} flex flex-col items-center gap-2 group cursor-pointer z-20`}
+                        onClick={() => onSelect(m.id)}
+                     >
+                         <div className="w-16 h-16 rounded-full bg-zinc-800/80 backdrop-blur-sm border border-white/10 flex items-center justify-center transition-all group-hover:bg-zinc-700/80 group-hover:scale-110 shadow-lg">
+                            {m.icon}
+                         </div>
+                         <span className="text-white text-xs font-medium tracking-wide shadow-black drop-shadow-md">{m.label}</span>
+                     </motion.div>
+                 ))}
+            </div>
+
+            {/* Close Button */}
+            <motion.button
+                initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
+                animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
+                transition={{ delay: 0.2 }}
+                onClick={onClose}
+                className="w-12 h-12 rounded-full bg-zinc-800/80 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white hover:bg-zinc-700/80 transition-colors z-20 relative shadow-lg"
+            >
+                <X className="w-5 h-5" />
+            </motion.button>
+            
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 // --- View Components ---
 
 function HomeView({ onNavigate }: { onNavigate: (feature: string) => void }) {
@@ -841,14 +1037,22 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("home");
   const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
   const [isShooting, setIsShooting] = useState(false);
+  const [showShootMenu, setShowShootMenu] = useState(false);
+  const [shootMode, setShootMode] = useState("");
 
   const handleTabChange = (tab: string) => {
     if (tab === 'shoot') {
-        setIsShooting(true);
+        setShowShootMenu(true);
         return;
     }
     setActiveTab(tab);
     setSelectedFeature(null);
+  };
+
+  const handleShootSelect = (mode: string) => {
+      setShootMode(mode);
+      setShowShootMenu(false);
+      setIsShooting(true);
   };
 
   const handleNavigate = (feature: string) => {
@@ -857,6 +1061,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white font-sans max-w-md mx-auto shadow-2xl overflow-hidden relative flex flex-col">
+      {/* Shoot Mode Menu Overlay */}
+      <ShootModeSelector 
+        isOpen={showShootMenu} 
+        onClose={() => setShowShootMenu(false)} 
+        onSelect={handleShootSelect} 
+      />
+
       {/* Camera / Shoot Flow Overlay */}
       <AnimatePresence>
         {isShooting && (
@@ -867,14 +1078,30 @@ export default function App() {
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                 className="fixed inset-0 z-50 bg-black"
             >
-                <ShootFlow onCancel={() => setIsShooting(false)} />
+                <ShootFlow onCancel={() => setIsShooting(false)} mode={shootMode} />
+            </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Group Shot Flow Overlay */}
+      <AnimatePresence>
+        {selectedFeature === '组图拍摄' && (
+             <motion.div 
+                key="group-shot"
+                initial={{ opacity: 0, x: 20 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                exit={{ opacity: 0, x: -20 }}
+                className="fixed inset-0 z-40 bg-gray-50"
+            >
+                <GroupShotView onCancel={() => setSelectedFeature(null)} />
             </motion.div>
         )}
       </AnimatePresence>
 
+
       <Header 
         title={selectedFeature || (activeTab === 'assets' ? "品牌资产" : activeTab === 'gallery' ? "我的作品" : activeTab === 'retouch' ? "AI 修图" : "BrandCam")} 
-        showBack={!!selectedFeature}
+        showBack={!!selectedFeature && selectedFeature !== '组图拍摄'}
         onBack={() => setSelectedFeature(null)}
       />
       
@@ -891,7 +1118,7 @@ export default function App() {
              </motion.div>
         )}
 
-        {selectedFeature && (
+        {selectedFeature && selectedFeature !== '组图拍摄' && (
             <motion.div key="detail" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col overflow-hidden">
                 <FeatureDetailView feature={selectedFeature} onBack={() => setSelectedFeature(null)} />
             </motion.div>
